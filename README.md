@@ -31,5 +31,5 @@ Requires a CSV `export.csv`, created by the export script.
 ### Usage
 
 ```
-drush scr import-i2.php
+drush scr import-i2.php --uri https://your-real-domain.com
 ```
