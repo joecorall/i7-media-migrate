@@ -7,8 +7,6 @@ use Drupal\user\Entity\User;
 
 // path to CSV created by export-i7.php
 $csvFile = 'export.csv';
-// TODO: "Original File" islandora media use taxonomy term ID
-$original_file_tid = 123;
 
 // login as uid=1
 $userid = 1;
