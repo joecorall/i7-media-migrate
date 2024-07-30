@@ -48,19 +48,22 @@ while (($row = fgetcsv($handle)) !== FALSE) {
     continue;
   }
 
+  $name = $nid . '.' . $extension;
   $file = File::create([
-    'filename' => $nid . '.' . $extension,
+    'filename' => $name,
     'uri' => $uri,
     'status' => 1,
     'created' => $created,
+    'filesize' => $size,
+    'filemime' => $mimetype,
   ]);
   $file->save();
   $media = Media::create([
-    'name' => $nid . ' - Original File',
+    'name' => $name,
     'bundle' => $bundle,
     $file_field => $file->id(),
     'field_media_of' => $nid,
-    'field_media_use' => $original_file_tid,
+    'field_media_use' => $media_use,
     'status' => 1,
     'created' => $created,
   ]);
