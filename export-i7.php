@@ -116,6 +116,7 @@ while (($row = fgetcsv($handle)) !== FALSE) {
         break;
       default:
         echo "Unknown mimetype $mimetype\n";
+        continue 2;
     }
 
     fputcsv($w, [
