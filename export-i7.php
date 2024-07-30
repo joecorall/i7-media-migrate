@@ -89,6 +89,7 @@ while (($row = fgetcsv($handle)) !== FALSE) {
         $extension = 'jp2';
         $file_field = 'field_media_file';
         break;
+      case 'text/xml':
       case 'application/xml':
         $bundle = 'file';
         $extension = 'xml';
