@@ -14,7 +14,9 @@ nid,pid
 2,foo:object2
 ```
 
-Writes a CSV `export.csv`
+And needs to be ran from a server with access to the i7 foxml and datastream directories.
+
+Creates a CSV `export.csv`
 
 ### Usage
 
