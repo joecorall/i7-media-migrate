@@ -8,7 +8,7 @@ $exportCsv = 'export.csv';
 // where your i7 foxml files are stored
 $OBJ_DIR="../i7";
 // where your i7 datastream binaries are stored
-$DATA_URI="s3://repositorydata/datastreamStore/";
+$DATA_URI="private://";
 
 // the i7 datastream Objects you want to export/import
 // TODO: update numbers to actual islandora media use TIDs
