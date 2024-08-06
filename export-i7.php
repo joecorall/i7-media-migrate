@@ -13,11 +13,9 @@ $DATA_URI="s3://repositorydata/datastreamStore/";
 // the i7 datastream Objects you want to export/import
 // TODO: update numbers to actual islandora media use TIDs
 $i7DataStreams = [
-  "OBJ" => 1,
-  "MODS" => 2,
-  "OCR" => 3,
-  "TN" => 4,
-  "HOCR" => 5,
+  "OBJ" => 3,
+  "MODS" => 34,
+  "TN" => 6,
 ];
 
 // open CSV
@@ -70,7 +68,7 @@ while (($row = fgetcsv($handle)) !== FALSE) {
     switch ($mimetype) {
       // TODO: add more mimetypes
       case 'text/plain':
-        $bundle = 'extracted_text';
+        $bundle = $id == 'OCR' ? 'extracted_text' : 'file';
         $extension = 'txt';
         $file_field = 'field_media_file';
         break;
