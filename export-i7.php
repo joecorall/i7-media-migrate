@@ -11,12 +11,107 @@ $OBJ_DIR="../i7";
 $DATA_URI="private://";
 
 // the i7 datastream Objects you want to export/import
-// TODO: update numbers to actual islandora media use TIDs
-$i7DataStreams = [
+//Default
+$i7DataStreamsDefault = [
   "OBJ" => 3,
+  "MODS" => 34,
+  "OCR" => 1,
+  "TN" => 6,
+  "HOCR" => 3412,
+  "DC" => 3410,
+  "TECHMD" => 19,
+  "JP2" => 3411,
+];
+
+$bookCModel = [
+  "DC" => 3410,
+  "MODS" => 34,
+  "OCR" => 1,
+  "PDF" => 3413,
+  "TN" => 6,
+];
+
+$compoundCModel = [
+  "DC" => 3410,
+  "DEED" => 3415,
   "MODS" => 34,
   "TN" => 6,
 ];
+
+$newspaperPageCModel = [
+  "DC" => 3410,
+  "HOCR" => 3412,
+  "JP2" => 3411,
+  "JPG" => 5,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "OCR" => 1,
+  "TECHMD" => 19,
+  "TN" => 6,
+];
+
+$oralhistoriesCModel = [
+  "DC" => 3410,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "TECHMD" => 19,
+  "TN" => 6,
+  "TRANSCRIPT_WORD" => 3413,
+];
+
+$sp_basic_image = [
+  "DC" => 3410,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "TECHMD" => 19,
+  "TN" => 6,
+];
+
+$sp_large_image_cmodel = [
+  "DC" => 3410,
+  "JP2" => 3411,
+  "JPG" => 5,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "TECHMD" => 19,
+  "TIFF" => 3,
+  "TN" => 6,
+];
+
+$sp_pdf = [
+  "DC" => 3410,
+  "FULL_TEXT" => 1,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "TECHMD" => 19,
+  "TN" => 6,
+];
+
+$sp_streaming = [
+  "DC" => 3410,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "TECHMD" => 19,
+  "TN" => 6,
+];
+
+$sp_videoCModel = [
+  "DC" => 3410,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "TECHMD" => 19,
+  "TN" => 6,
+];
+
+$sp_audioCModel = [
+  "DC" => 3410,
+  "MODS" => 34,
+  "OBJ" => 3,
+  "TECHMD" => 19,
+  "TN" => 6,
+];
+
+$i7DataStreams = [];
 
 // open CSV
 $handle = fopen($csvFile, 'r');
@@ -38,8 +133,12 @@ $header = [
   'media_use_tid',
   'file_extension',
   'file_field',
+  'field_height',
+  'field_width',
 ];
 fputcsv($w, $header);
+
+
 while (($row = fgetcsv($handle)) !== FALSE) {
   $nid = $row[0];
   $pid = $row[1];
@@ -50,14 +149,69 @@ while (($row = fgetcsv($handle)) !== FALSE) {
   $xml = file_get_contents($xml_file);
   $xmlObject = simplexml_load_string($xml);
 
+  echo $xml_file, "\n" ;
+
+  // PUT IN CHECK FOR MODEL THEN USE THE RIGHT MEDIA USE SETUP
+  // USE this to check model, then clean up string for model, then assign right model/media use
+  if ($rels_ext = $xmlObject->xpath("/foxml:digitalObject/foxml:datastream[@ID='RELS-EXT']")) {
+    $test_id = "RELS-EXT";
+    print "At least That works \n";
+    $xmlObject->registerXPathNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+    $xmlObject->registerXPathNamespace('fm', 'info:fedora/fedora-system:def/model#');
+
+    $xpath_test = $xmlObject->xpath('/foxml:digitalObject/foxml:datastream/foxml:datastreamVersion[last()]/foxml:xmlContent/rdf:RDF/rdf:Description/fm:hasModel/@rdf:resource');
+
+    $model_full_path = $xpath_test[0]['resource'];
+    $model_full = explode(":", $model_full_path);
+    $model = $model_full[2];
+    if ($model == "bookCModel") {
+      $i7DataStreams = $bookCModel;
+    } elseif ($model == "compoundCModel") {
+      $i7DataStreams = $compoundCModel;
+    } elseif ($model == "newspaperPageCModel" || $model == "pageCModel") {
+      $i7DataStreams = $newspaperPageCModel;
+    } elseif ($model == "oralhistoriesCModel") {
+      $i7DataStreams = $oralhistoriesCModel;
+    } elseif ($model == "sp_basic_image") {
+      $i7DataStreams = $sp_basic_image;
+    } elseif ($model == "sp_large_image_cmodel") {
+      $i7DataStreams = $sp_large_image_cmodel;
+    } elseif ($model == "sp_pdf") {
+      $i7DataStreams = $sp_pdf;
+    } elseif ($model == "sp_streaming") {
+      $i7DataStreams = $sp_streaming;
+    } elseif ($model == "sp_videoCModel") {
+      $i7DataStreams = $sp_videoCModel;
+    } elseif ($model == "sp-audioCModel") {
+      $i7DataStreams = $sp_audioCModel;
+    } else {
+      $i7DataStreams = $i7DataStreamsDefault;
+    }
+    //print $model_full . "\n";
+    print $model . "\n";
+    print_r($i7DataStreams);
+  }
+
+
   foreach ($i7DataStreams as $id => $tid) {
+    $field_height = "";
+    $field_width = "";
     $obj = $xmlObject->xpath('//foxml:datastream[@ID="' . $id . '"]/foxml:datastreamVersion');
     $lastDatastreamVersion = (array)end($obj);
     $xpath = $xmlObject->xpath('//foxml:datastream[@ID="' . $id . '"]/foxml:datastreamVersion/foxml:contentLocation');
     $lastContentLocation = end($xpath);
+
     if (empty($lastContentLocation['REF'])) {
       continue;
     }
+
+    if ($id == "JP2") {
+      if ($rels_int = $xmlObject->xpath("/foxml:digitalObject/foxml:datastream[@ID='RELS-INT']")) {
+        $field_width = $xmlObject->xpath("/foxml:digitalObject/foxml:datastream/foxml:datastreamVersion[last()]/foxml:xmlContent/*[namespace-uri()='http://www.w3.org/1999/02/22-rdf-syntax-ns#' and local-name()='RDF']/*[namespace-uri()='http://www.w3.org/1999/02/22-rdf-syntax-ns#' and local-name()='Description']/*[namespace-uri()='http://islandora.ca/ontology/relsext#' and local-name()='width']")[0];
+        $field_height = $xmlObject->xpath("/foxml:digitalObject/foxml:datastream/foxml:datastreamVersion[last()]/foxml:xmlContent/*[namespace-uri()='http://www.w3.org/1999/02/22-rdf-syntax-ns#' and local-name()='RDF']/*[namespace-uri()='http://www.w3.org/1999/02/22-rdf-syntax-ns#' and local-name()='Description']/*[namespace-uri()='http://islandora.ca/ontology/relsext#' and local-name()='height']")[0];
+      }
+    }
+
     $ref = (string)$lastContentLocation['REF'];
     $uri = $DATA_URI . dereference($ref);
 
@@ -66,9 +220,8 @@ while (($row = fgetcsv($handle)) !== FALSE) {
     $mimetype = $lastDatastreamVersion["@attributes"]['MIMETYPE'];
     $size = $lastDatastreamVersion["@attributes"]['SIZE'];
     switch ($mimetype) {
-      // TODO: add more mimetypes
       case 'text/plain':
-        $bundle = $id == 'OCR' ? 'extracted_text' : 'file';
+        $bundle = 'extracted_text';
         $extension = 'txt';
         $file_field = 'field_media_file';
         break;
@@ -128,7 +281,11 @@ while (($row = fgetcsv($handle)) !== FALSE) {
       $tid,
       $extension,
       $file_field,
+      $field_height,
+      $field_width,
     ]);
+    $field_height = "";
+    $field_width = "";
   }
 
 }
